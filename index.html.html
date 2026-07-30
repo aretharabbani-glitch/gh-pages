@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Froggy Jump - Ciri-Ciri Makhluk Hidup (Kelas 6 SD)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-color: #0d1f2d;
+        }
+        .font-game {
+            font-family: 'Fredoka', cursive;
+        }
+        .bg-pond {
+            background: radial-gradient(circle at center, #1b4965 0%, #0d212c 85%, #050d12 100%);
+        }
+        .glass-panel-dark {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 2px solid rgba(52, 211, 153, 0.25);
+        }
+        /* Custom Animations */
+        @keyframes floatPad {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(0.5deg); }
+        }
+        .animate-float {
+            animation: floatPad 4s ease-in-out infinite;
+        }
+        @keyframes happyBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(-35px) scale(1.15) rotate(-5deg); }
+            60% { transform: translateY(-10px) scale(0.95) rotate(5deg); }
+        }
+        .animate-happy {
+            animation: happyBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes sinkWater {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(40px) scale(0.7) rotate(15deg); opacity: 0.6; }
+            100% { transform: translateY(90px) scale(0.3) rotate(30deg); opacity: 0; }
+        }
+        .animate-sink {
+            animation: sinkWater 0.8s ease-in forwards;
+        }
+        @keyframes padDescend {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(40px) scale(0.9); }
+        }
+        .animate-pad-next {
+            animation: padDescend 0.35s ease-out forwards;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(52, 211, 153, 0.4); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- HEADER BAR -->
+    <header class="bg-emerald-900/90 border-b-4 border-emerald-600 px-3 py-2 md:px-6 md:py-3 flex items-center justify-between shadow-2xl relative z-30">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="bg-amber-400 p-2 md:p-2.5 rounded-2xl text-slate-900 shadow-lg transform -rotate-3 hover:rotate-0 transition">
+                <span class="text-2xl md:text-3xl">🐸</span>
+            </div>
+            <div>
+                <h1 class="font-game text-lg md:text-2xl font-bold tracking-wide text-amber-300 drop-shadow">FROGGY JUMP</h1>
+                <p class="text-[10px] md:text-xs text-emerald-200 font-bold">Materi: Ciri-Ciri Makhluk Hidup (Kelas 6 SD)</p>
+            </div>
+        </div>
+
+        <!-- Mode Selectors & Controls -->
+        <div class="flex items-center gap-1.5 md:gap-3">
+            <!-- Desktop Game Mode Buttons -->
+            <div class="hidden md:flex bg-emerald-950/80 p-1 rounded-2xl border border-emerald-500/40 shadow-inner">
+                <button onclick="setGameMode('solo')" id="btn-mode-solo" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500 text-white shadow-md">
+                    <i class="fa-solid fa-user mr-1.5"></i> Solo (1P)
+                </button>
+                <button onclick="setGameMode('duel')" id="btn-mode-duel" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-emerald-200 hover:text-white">
+                    <i class="fa-solid fa-user-friends mr-1.5"></i> Duel (2P)
+                </button>
+                <button onclick="setGameMode('squad')" id="btn-mode-squad" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-emerald-200 hover:text-white">
+                    <i class="fa-solid fa-users mr-1.5"></i> Squad (4P)
+                </button>
+            </div>
+
+            <!-- Global Action Controls -->
+            <div class="flex items-center gap-1.5 md:gap-2">
+                <button id="btn-audio" onclick="toggleAudio()" class="p-2 md:p-2.5 bg-emerald-800 hover:bg-emerald-700 active:scale-95 rounded-xl text-white font-bold transition shadow border border-emerald-500/50" title="Audio On/Off">
+                    <i class="fa-solid fa-volume-high text-sm md:text-base text-emerald-300" id="icon-audio"></i>
+                </button>
+                <button id="btn-fullscreen" onclick="toggleFullScreen()" class="p-2 md:p-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-900 rounded-xl font-bold transition shadow border border-amber-300" title="Layar Penuh (Full Screen)">
+                    <i class="fa-solid fa-expand text-sm md:text-base"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Mode Selector Bar -->
+    <div class="md:hidden flex justify-around bg-emerald-950/95 p-1.5 border-b border-emerald-800 text-xs font-bold z-20">
+        <button onclick="setGameMode('solo')" id="btn-mob-solo" class="px-3 py-1 rounded-lg bg-emerald-500 text-white shadow">Solo (1P)</button>
+        <button onclick="setGameMode('duel')" id="btn-mob-duel" class="px-3 py-1 rounded-lg text-emerald-300">Duel (2P)</button>
+        <button onclick="setGameMode('squad')" id="btn-mob-squad" class="px-3 py-1 rounded-lg text-emerald-300">Squad (4P)</button>
+    </div>
+
+    <!-- MAIN GAME AREA -->
+    <main class="flex-1 relative bg-pond overflow-hidden flex items-stretch">
+        
+        <!-- Rain drops & Splash Particle Layer -->
+        <canvas id="weatherCanvas" class="absolute inset-0 pointer-events-none z-10"></canvas>
+
+        <!-- Viewports Container (Grid layout changes dynamically: 1P, 2P, 4P) -->
+        <div id="viewportsGrid" class="w-full h-full grid grid-cols-1 divide-x-2 divide-y-2 divide-emerald-500/30">
+            <!-- Dynamic Player Viewports Inserted Here -->
+        </div>
+
+    </main>
+
+    <!-- START / GAMEOVER / RESULT MODAL -->
+    <div id="gameModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel-dark max-w-lg w-full rounded-3xl p-6 md:p-8 shadow-2xl text-center transform transition-all scale-100 max-h-[90vh] overflow-y-auto">
+            <div id="modalContent">
+                <!-- Welcome Screen Content (Default) -->
+                <div class="w-20 h-20 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-400/80 shadow-lg animate-bounce">
+                    <span class="text-5xl">🐸</span>
+                </div>
+                <h2 class="font-game text-2xl md:text-3xl font-bold text-amber-300 mb-2">Froggy Jump Game!</h2>
+                <p class="text-xs md:text-sm text-slate-300 mb-5 leading-relaxed">
+                    Bantu Katak melompat ke teratai dengan jawaban yang benar tentang <b class="text-emerald-300">Ciri-Ciri & Adaptasi Makhluk Hidup</b> (Kelas 6 SD). Hati-hati, jika salah katak akan tenggelam ke dasar kolam!
+                </p>
+
+                <div class="bg-slate-900/80 p-4 rounded-2xl mb-6 text-left border border-slate-700/80 text-xs space-y-2">
+                    <div class="flex items-center gap-2 text-amber-300 font-bold text-sm mb-1">
+                        <i class="fa-solid fa-gamepad"></i> <span>Pilihan Mode Permainan:</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center pt-1">
+                        <button onclick="selectModalMode('solo')" id="mod-mode-solo" class="p-2 rounded-xl border border-emerald-500 bg-emerald-500 text-white font-bold transition">
+                            Solo (1P)
+                        </button>
+                        <button onclick="selectModalMode('duel')" id="mod-mode-duel" class="p-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-bold transition">
+                            Duel (2P)
+                        </button>
+                        <button onclick="selectModalMode('squad')" id="mod-mode-squad" class="p-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-bold transition">
+                            Squad (4P)
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-game text-lg md:text-xl rounded-2xl font-bold shadow-xl transition-all transform hover:scale-[1.02] active:scale-95 border-b-4 border-emerald-700">
+                    <i class="fa-solid fa-play mr-2"></i> MULAI PERMAINAN
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+                this.bgmTimer = null;
+                this.bgmNoteIndex = 0;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playJump() {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(260, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(650, this.ctx.currentTime + 0.18);
+                
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.18);
+            }
+
+            playCorrect() {
+                if (this.muted || !this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    
+                    const startTime = this.ctx.currentTime + (idx * 0.07);
+                    gain.gain.setValueAtTime(0, startTime);
+                    gain.gain.setValueAtTime(0.25, startTime + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.22);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.22);
+                });
+            }
+
+            playWrong() {
+                if (this.muted || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(240, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(75, this.ctx.currentTime + 0.45);
+
+                gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.45);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.45);
+            }
+
+            playSplash() {
+                if (this.muted || !this.ctx) return;
+                const bufferSize = this.ctx.sampleRate * 0.35;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                filter.frequency.linearRampToValueAtTime(180, this.ctx.currentTime + 0.35);
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.45, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                noise.start();
+            }
+
+            startBGM() {
+                if (this.bgmTimer) return;
+                this.init();
+                const melody = [329.63, 392.00, 440.00, 523.25, 440.00, 392.00, 349.23, 392.00];
+                this.bgmTimer = setInterval(() => {
+                    if (this.muted || !this.ctx) return;
+                    const freq = melody[this.bgmNoteIndex % melody.length];
+                    this.bgmNoteIndex++;
+
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+
+                    gain.gain.setValueAtTime(0.035, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.35);
+                }, 380);
+            }
+
+            stopBGM() {
+                if (this.bgmTimer) {
+                    clearInterval(this.bgmTimer);
+                    this.bgmTimer = null;
+                }
+            }
+        }
+
+        const audio = new SoundEngine();
+
+        function toggleAudio() {
+            audio.init();
+            audio.muted = !audio.muted;
+            const icon = document.getElementById('icon-audio');
+            if (audio.muted) {
+                icon.className = 'fa-solid fa-volume-xmark text-red-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-emerald-300';
+                audio.startBGM();
+            }
+        }
+    </script>
+
+    <script>
+        const QUESTION_BANK = [
+            {
+                q: "Manusia dan hewan bernapas menghirup oksigen (O2) dan mengeluarkan...",
+                options: ["Karbondioksida (CO2) & uap air", "Gas Nitrogen murni", "Gas Hidrogen", "Oksigen murni"],
+                answer: 0
+            },
+            {
+                q: "Tumbuhan Putri Malu menguncupkan daunnya saat disentuh. Hal ini membuktikan ciri...",
+                options: ["Tumbuh dan berkembang", "Peka terhadap rangsang (Iritabilitas)", "Membutuhkan makanan", "Berkembang biak"],
+                answer: 1
+            },
+            {
+                q: "Cicak memutuskan ekornya untuk mengelabui pemangsa. Kemampuan ini disebut...",
+                options: ["Mimikri", "Kamuflase", "Autotomi", "Ekolokasi"],
+                answer: 2
+            },
+            {
+                q: "Bunglon mengubah warna kulitnya sesuai warna lingkungan tempat ia hinggap. Kemampuan ini dinamakan...",
+                options: ["Mimikri", "Autotomi", "Adaptasi Morfologi", "Hibernasi"],
+                answer: 0
+            },
+            {
+                q: "Tumbuhan hijau mampu membuat makanannya sendiri melalui proses...",
+                options: ["Respirasi", "Fotosintesis", "Transpirasi", "Ekskresi"],
+                answer: 1
+            },
+            {
+                q: "Hewan yang berkembang biak dengan cara bertelur disebut hewan...",
+                options: ["Vivipar", "Ovipar", "Ovovivipar", "Fragmentasi"],
+                answer: 1
+            },
+            {
+                q: "Belalang dan serangga lainnya bernapas menggunakan organ...",
+                options: ["Insang", "Paru-paru", "Trakea", "Permukaan Kulit"],
+                answer: 2
+            },
+            {
+                q: "Pohon jati menggugurkan daunnya pada musim kemarau bertujuan untuk...",
+                options: ["Mengurangi penguapan air", "Mempercepat pertambahan tinggi", "Mencegah serangan hama", "Menghasilkan buah lebih cepat"],
+                answer: 0
+            },
+            {
+                q: "Ikan paus dan lumba-lumba bernapas menggunakan...",
+                options: ["Insang", "Paru-paru", "Kulit basah", "Trakea"],
+                answer: 1
+            },
+            {
+                q: "Kemampuan makhluk hidup untuk menyesuaikan diri dengan lingkungannya disebut...",
+                options: ["Adaptasi", "Iritabilitas", "Ekskresi", "Reproduksi"],
+                answer: 0
+            },
+            {
+                q: "Eceng gondok memiliki batang berongga. Fungsi utama rongga udara tersebut adalah...",
+                options: ["Mengapung di permukaan air", "Menyerap racun air", "Melindungi dari ikan", "Menyimpan makanan"],
+                answer: 0
+            },
+            {
+                q: "Proses pengeluaran zat-zat sisa metabolisme dari dalam tubuh dinamakan...",
+                options: ["Sekresi", "Ekskresi", "Digesti", "Sirkulasi"],
+                answer: 1
+            },
+            {
+                q: "Kaktus memiliki daun berbentuk duri yang berguna untuk...",
+                options: ["Mengurangi penguapan air", "Menarik perhatian serangga", "Menyimpan cadangan air", "Mempercepat fotosintesis"],
+                answer: 0
+            },
+            {
+                q: "Tumbuhan Kantong Semar menangkap serangga untuk memenuhi kebutuhan zat...",
+                options: ["Kalsium", "Nitrogen", "Oksigen", "Karbohidrat"],
+                answer: 1
+            },
+            {
+                q: "Burung Elang memiliki paruh tajam dan melengkung yang berguna untuk...",
+                options: ["Mencengkeram dan merobek daging", "Menebuk lubang pada pohon", "Menyaring lumpur mencari cacing", "Mengecap rasa manis biji"],
+                answer: 0
+            }
+        ];
+    </script>
+
+    <script>
+        const weatherCanvas = document.getElementById('weatherCanvas');
+        const wCtx = weatherCanvas.getContext('2d');
+        let rainDrops = [];
+        let splashes = [];
+
+        function resizeWeatherCanvas() {
+            weatherCanvas.width = weatherCanvas.offsetWidth;
+            weatherCanvas.height = weatherCanvas.offsetHeight;
+            initRain();
+        }
+        window.addEventListener('resize', resizeWeatherCanvas);
+
+        function initRain() {
+            rainDrops = [];
+            const count = Math.floor(weatherCanvas.width / 18);
+            for (let i = 0; i < count; i++) {
+                rainDrops.push({
+                    x: Math.random() * weatherCanvas.width,
+                    y: Math.random() * weatherCanvas.height,
+                    length: Math.random() * 18 + 10,
+                    speed: Math.random() * 7 + 10,
+                    opacity: Math.random() * 0.35 + 0.15
+                });
+            }
+        }
+
+        function createWaterSplash(x, y) {
+            audio.playSplash();
+            for (let i = 0; i < 22; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 7 + 2.5;
+                splashes.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 3.5,
+                    radius: Math.random() * 4.5 + 2,
+                    alpha: 1,
+                    color: Math.random() > 0.4 ? '#a5f3fc' : '#38bdf8'
+                });
+            }
+        }
+
+        function animateWeather() {
+            wCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+
+            // Draw rain lines
+            wCtx.strokeStyle = 'rgba(186, 230, 253, 0.35)';
+            wCtx.lineWidth = 1.2;
+            wCtx.beginPath();
+            rainDrops.forEach(drop => {
+                wCtx.moveTo(drop.x, drop.y);
+                wCtx.lineTo(drop.x - 1.5, drop.y + drop.length);
+                drop.y += drop.speed;
+                drop.x -= 0.4;
+                if (drop.y > weatherCanvas.height) {
+                    drop.y = -20;
+                    drop.x = Math.random() * weatherCanvas.width;
+                }
+            });
+            wCtx.stroke();
+
+            // Draw splash physics particles
+            for (let i = splashes.length - 1; i >= 0; i--) {
+                const s = splashes[i];
+                wCtx.beginPath();
+                wCtx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                wCtx.fillStyle = `rgba(186, 230, 253, ${s.alpha})`;
+                wCtx.fill();
+
+                s.x += s.vx;
+                s.y += s.vy;
+                s.vy += 0.28; // gravity force
+                s.alpha -= 0.025;
+
+                if (s.alpha <= 0) {
+                    splashes.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateWeather);
+        }
+    </script>
+
+    <script>
+        let currentMode = 'solo'; // 'solo', 'duel', 'squad'
+        let players = [];
+        const MAX_QUESTIONS_PER_ROUND = 10;
+
+        const FROG_COLORS = [
+            { name: 'Pemain 1 (Hijau)', primary: '#22c55e', secondary: '#15803d', eye: '#fef08a', badge: 'bg-emerald-500' },
+            { name: 'Pemain 2 (Biru)', primary: '#0284c7', secondary: '#0369a1', eye: '#e0f2fe', badge: 'bg-sky-500' },
+            { name: 'Pemain 3 (Kuning)', primary: '#eab308', secondary: '#ca8a04', eye: '#fef9c3', badge: 'bg-amber-500' },
+            { name: 'Pemain 4 (Ungu)', primary: '#a855f7', secondary: '#7e22ce', eye: '#f3e8ff', badge: 'bg-purple-500' }
+        ];
+
+        class PlayerInstance {
+            constructor(id, colorInfo) {
+                this.id = id;
+                this.color = colorInfo;
+                this.score = 0;
+                this.currentQIndex = 0;
+                this.shuffledQuestions = [];
+                this.status = 'idle'; // 'idle', 'jumping', 'sinking'
+                this.containerEl = null;
+                this.initQuestions();
+            }
+
+            initQuestions() {
+                this.shuffledQuestions = [...QUESTION_BANK].sort(() => Math.random() - 0.5);
+                this.currentQIndex = 0;
+                this.score = 0;
+                this.status = 'idle';
+            }
+
+            getCurrentQuestion() {
+                return this.shuffledQuestions[this.currentQIndex % this.shuffledQuestions.length];
+            }
+        }
+
+        function selectModalMode(mode) {
+            currentMode = mode;
+            ['solo', 'duel', 'squad'].forEach(m => {
+                const btn = document.getElementById(`mod-mode-${m}`);
+                if (btn) {
+                    if (m === mode) {
+                        btn.className = "p-2 rounded-xl border border-emerald-500 bg-emerald-500 text-white font-bold transition shadow";
+                    } else {
+                        btn.className = "p-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-bold transition hover:text-white";
+                    }
+                }
+            });
+        }
+
+        function setGameMode(mode) {
+            currentMode = mode;
+            ['solo', 'duel', 'squad'].forEach(m => {
+                const btnD = document.getElementById(`btn-mode-${m}`);
+                const btnM = document.getElementById(`btn-mob-${m}`);
+                if (m === mode) {
+                    if (btnD) btnD.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-500 text-white shadow-md";
+                    if (btnM) btnM.className = "px-3 py-1 rounded-lg bg-emerald-500 text-white shadow";
+                } else {
+                    if (btnD) btnD.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-emerald-200 hover:text-white";
+                    if (btnM) btnM.className = "px-3 py-1 rounded-lg text-emerald-300";
+                }
+            });
+
+            setupViewports();
+        }
+
+        function setupViewports() {
+            const grid = document.getElementById('viewportsGrid');
+            grid.innerHTML = '';
+
+            let count = 1;
+            if (currentMode === 'duel') count = 2;
+            if (currentMode === 'squad') count = 4;
+
+            if (count === 1) grid.className = "w-full h-full grid grid-cols-1";
+            if (count === 2) grid.className = "w-full h-full grid grid-cols-1 md:grid-cols-2 divide-y-2 md:divide-y-0 md:divide-x-2 divide-emerald-500/40";
+            if (count === 4) grid.className = "w-full h-full grid grid-cols-2 grid-rows-2 divide-x-2 divide-y-2 divide-emerald-500/40";
+
+            players = [];
+            for (let i = 0; i < count; i++) {
+                const player = new PlayerInstance(i + 1, FROG_COLORS[i]);
+                players.push(player);
+
+                const vp = document.createElement('div');
+                vp.id = `player-viewport-${i}`;
+                vp.className = "relative flex flex-col justify-between p-2.5 md:p-5 h-full overflow-hidden select-none";
+                grid.appendChild(vp);
+                player.containerEl = vp;
+
+                renderPlayerView(player);
+            }
+        }
+
+        function renderPlayerView(player) {
+            const q = player.getCurrentQuestion();
+            const optionLabels = ['A', 'B', 'C', 'D'];
+
+            player.containerEl.innerHTML = `
+                <!-- TOP HEADER CARD: PLAYER INFO & SCORE -->
+                <div class="relative z-10 space-y-1.5 md:space-y-2">
+                    <div class="flex items-center justify-between bg-slate-950/80 p-2 px-3 md:px-4 rounded-2xl border border-slate-700/80 backdrop-blur shadow-md">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full ${player.color.badge} inline-block animate-pulse"></span>
+                            <span class="font-game text-xs md:text-sm text-amber-300">Pemain ${player.id}</span>
+                        </div>
+                        <div class="font-game text-xs md:text-base text-emerald-400 font-bold bg-slate-900/90 px-3 py-1 rounded-xl border border-emerald-500/30">
+                            Skor: <span id="score-${player.id}">${player.score}</span>
+                        </div>
+                    </div>
+
+                    <!-- QUESTION BOX -->
+                    <div id="qbox-${player.id}" class="bg-slate-900/95 border-2 border-emerald-500/40 p-2.5 md:p-4 rounded-2xl shadow-xl backdrop-blur transition-all">
+                        <div class="text-[10px] md:text-xs text-amber-400 font-bold uppercase tracking-wider mb-1">Soal ${player.currentQIndex + 1} / ${MAX_QUESTIONS_PER_ROUND}</div>
+                        <p class="text-xs md:text-sm text-slate-100 font-bold leading-snug">
+                            ${q.q}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- MIDDLE: POND SCENE WITH ANIMATED FROG & LILY PAD -->
+                <div class="relative flex-1 my-1 md:my-2 flex items-center justify-center overflow-hidden">
+                    
+                    <!-- Water Ripple Circles -->
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+                        <div class="w-48 h-48 md:w-64 md:h-64 border-4 border-cyan-300/30 rounded-full animate-ping"></div>
+                        <div class="w-32 h-32 md:w-48 md:h-48 border-2 border-teal-300/20 rounded-full animate-pulse"></div>
+                    </div>
+
+                    <!-- FROG CONTAINER -->
+                    <div id="frog-box-${player.id}" class="relative z-20 transition-all duration-300 transform flex flex-col items-center">
+                        <svg id="frog-svg-${player.id}" class="w-20 h-20 md:w-28 md:h-28 drop-shadow-2xl transition-transform duration-300" viewBox="0 0 100 100">
+                            <!-- Shadow -->
+                            <ellipse cx="50" cy="85" rx="28" ry="7" fill="rgba(0,0,0,0.35)" />
+                            
+                            <!-- Legs Back -->
+                            <path d="M 20 65 Q 5 50 20 80 Q 35 80 30 65 Z" fill="${player.color.secondary}" />
+                            <path d="M 80 65 Q 95 50 80 80 Q 65 80 70 65 Z" fill="${player.color.secondary}" />
+                            
+                            <!-- Body -->
+                            <ellipse cx="50" cy="60" rx="28" ry="24" fill="${player.color.primary}" />
+                            <!-- Belly -->
+                            <ellipse cx="50" cy="63" rx="18" ry="15" fill="#fef08a" opacity="0.85" />
+                            
+                            <!-- Eyes Back Outer -->
+                            <circle cx="35" cy="38" r="11" fill="${player.color.primary}" />
+                            <circle cx="65" cy="38" r="11" fill="${player.color.primary}" />
+                            <!-- Eyes Inner -->
+                            <circle cx="35" cy="38" r="7.5" fill="white" />
+                            <circle cx="65" cy="38" r="7.5" fill="white" />
+                            <circle cx="37" cy="38" r="3.5" fill="#0f172a" />
+                            <circle cx="67" cy="38" r="3.5" fill="#0f172a" />
+                            <circle cx="39" cy="36" r="1.5" fill="white" />
+                            <circle cx="69" cy="36" r="1.5" fill="white" />
+
+                            <!-- Mouth -->
+                            <path d="M 38 62 Q 50 71 62 62" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round" />
+                            <!-- Cheek Blush -->
+                            <circle cx="30" cy="60" r="3.5" fill="#f43f5e" opacity="0.5" />
+                            <circle cx="70" cy="60" r="3.5" fill="#f43f5e" opacity="0.5" />
+                        </svg>
+                        <div class="bg-amber-400 text-slate-900 font-game text-[9px] md:text-xs font-bold px-2 py-0.5 rounded-full shadow border border-amber-200 -mt-2">
+                            Pilih Teratai!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM: 4 LILY PAD ANSWER OPTIONS -->
+                <div id="pads-grid-${player.id}" class="relative z-10 grid grid-cols-2 gap-1.5 md:gap-2.5 transition-all">
+                    ${q.options.map((opt, idx) => `
+                        <button onclick="handleAnswer(${player.id}, ${idx})" 
+                                id="pad-${player.id}-${idx}"
+                                class="group relative flex items-center justify-start p-2.5 md:p-3.5 rounded-2xl bg-emerald-800/80 hover:bg-emerald-700/90 border-2 border-emerald-400/60 shadow-lg transition-all duration-200 hover:-translate-y-1 active:translate-y-1 text-left min-h-[60px] md:min-h-[70px]">
+                            <!-- Option Badge -->
+                            <div class="flex-shrink-0 bg-emerald-500 text-slate-950 font-game font-bold text-xs md:text-sm w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center border border-white/80 shadow mr-2">
+                                ${optionLabels[idx]}
+                            </div>
+                            <span class="text-[11px] md:text-xs text-white font-bold leading-tight flex-1">
+                                ${opt}
+                            </span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function handleAnswer(playerId, selectedOption) {
+            const player = players.find(p => p.id === playerId);
+            if (!player || player.status !== 'idle') return;
+
+            audio.init();
+            const currentQ = player.getCurrentQuestion();
+            const frogBox = document.getElementById(`frog-box-${playerId}`);
+            const padBtn = document.getElementById(`pad-${playerId}-${selectedOption}`);
+            const padsGrid = document.getElementById(`pads-grid-${playerId}`);
+
+            if (selectedOption === currentQ.answer) {
+                // JAWABAN BENAR
+                player.status = 'jumping';
+                audio.playJump();
+
+                // Animasi Katak Melompat Gembira
+                frogBox.classList.add('animate-happy');
+                if (padBtn) {
+                    padBtn.classList.remove('bg-emerald-800/80');
+                    padBtn.classList.add('bg-emerald-500', 'border-emerald-200', 'ring-2', 'ring-emerald-300');
+                }
+
+                setTimeout(() => {
+                    audio.playCorrect();
+                    player.score += 10;
+                    document.getElementById(`score-${player.id}`).innerText = player.score;
+
+                    // Animasi Teratai Lama Turun & Berganti Soal
+                    if (padsGrid) padsGrid.classList.add('animate-pad-next');
+
+                    setTimeout(() => {
+                        frogBox.classList.remove('animate-happy');
+                        player.currentQIndex++;
+                        
+                        // Cek apakah ronde permainan selesai
+                        if (player.currentQIndex >= MAX_QUESTIONS_PER_ROUND) {
+                            checkGameOver();
+                        } else {
+                            player.status = 'idle';
+                            renderPlayerView(player);
+                        }
+                    }, 350);
+                }, 400);
+
+            } else {
+                // JAWABAN SALAH (Tenggelam Ke Dalam Air)
+                player.status = 'sinking';
+                audio.playWrong();
+
+                if (padBtn) {
+                    padBtn.classList.remove('bg-emerald-800/80');
+                    padBtn.classList.add('bg-rose-600', 'border-rose-300', 'animate-pulse');
+                }
+
+                // Animasi Tenggelam
+                frogBox.classList.add('animate-sink');
+
+                // Efek Cipratan Air Canvas
+                const rect = frogBox.getBoundingClientRect();
+                createWaterSplash(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+                setTimeout(() => {
+                    // Reset Posisi Katak Kembali Ke Top
+                    frogBox.classList.remove('animate-sink');
+                    player.status = 'idle';
+                }, 900);
+            }
+        }
+
+        function checkGameOver() {
+            const allFinished = players.every(p => p.currentQIndex >= MAX_QUESTIONS_PER_ROUND);
+            if (allFinished) {
+                showGameOverModal();
+            }
+        }
+
+        function showGameOverModal() {
+            const modal = document.getElementById('gameModal');
+            const content = document.getElementById('modalContent');
+
+            // Sort players by highest score
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+
+            let resultsHTML = '';
+            if (players.length === 1) {
+                resultsHTML = `
+                    <div class="my-4 p-4 bg-emerald-950/80 rounded-2xl border border-emerald-500/50">
+                        <p class="text-sm text-emerald-300 font-bold">Skor Akhir Kamu:</p>
+                        <p class="font-game text-4xl text-amber-300 my-1">${winner.score} Poin</p>
+                        <p class="text-xs text-slate-300">${winner.score >= 80 ? '🎉 Luar Biasa! Kamu Sangat Memahami Ciri Makhluk Hidup!' : '👍 Bagus! Ayo berlatih lagi untuk nilai sempurna!'}</p>
+                    </div>
+                `;
+            } else {
+                resultsHTML = `
+                    <div class="my-4 space-y-2">
+                        <p class="text-xs text-amber-300 font-bold uppercase tracking-wider">🏆 Pemenang: Pemain ${winner.id} (${winner.score} Poin)</p>
+                        <div class="bg-slate-900/90 rounded-2xl p-3 border border-slate-700 text-xs divide-y divide-slate-800">
+                            ${sorted.map((p, idx) => `
+                                <div class="flex items-center justify-between py-1.5 px-2">
+                                    <span class="font-bold ${idx === 0 ? 'text-amber-300' : 'text-slate-300'}">
+                                        #${idx + 1} Pemain ${p.id}
+                                    </span>
+                                    <span class="font-game text-emerald-400 font-bold">${p.score} Poin</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="w-16 h-16 bg-amber-400/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-amber-400 shadow-lg">
+                    <span class="text-4xl">👑</span>
+                </div>
+                <h2 class="font-game text-2xl md:text-3xl font-bold text-amber-300 mb-1">Permainan Selesai!</h2>
+                ${resultsHTML}
+                <button onclick="startGame()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-game text-lg rounded-2xl font-bold shadow-lg transition transform hover:scale-[1.02] border-b-4 border-emerald-700">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> MAIN LAGI
+                </button>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function startGame() {
+            audio.init();
+            audio.startBGM();
+            document.getElementById('gameModal').classList.add('hidden');
+            setupViewports();
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Fullscreen error: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            resizeWeatherCanvas();
+            animateWeather();
+            setupViewports();
+        };
+    </script>
+</body>
+</html>
